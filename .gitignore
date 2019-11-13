@@ -1,0 +1,8 @@
+/obj
+/bin
+/.vs
+/*.user
+/appsettings.Development.json
+/FluffySpoonAspNetLetsEncryptCertificate_Account
+/FluffySpoonAspNetLetsEncryptCertificate_Site
+/FluffySpoonAspNetLetsEncryptChallenge_Challenges

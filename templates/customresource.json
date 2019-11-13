@@ -1,0 +1,26 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "databaseName": { "type": "string" }
+  },
+  "variables": {
+    "apiVersions": {
+      "MicrosoftCustomProviders_resourceProviders": "2018-09-01-preview"
+    },
+    "customRP": {
+      "name": "customDevOpsResource"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.CustomProviders/resourceProviders/postgresqldb",
+      "apiVersion": "[variables('apiVersions').MicrosoftCustomProviders_resourceProviders]",
+      "location": "[resourceGroup().location]",
+      "name": "[concat(variables('customRP').name, '/',parameters('databaseName'))]",
+      "properties": {
+        "database": "[parameters('databaseName')]"
+      }
+    }
+  ]
+}

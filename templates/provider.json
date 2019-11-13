@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceProviderURL": { "type": "string" },
+    "databaseName": { "type": "string" },
+    "authzCode": { "type": "string" }
+  },
+  "variables": {
+    "apiVersions": {
+      "MicrosoftCustomProviders_resourceProviders": "2018-09-01-preview"
+    },
+    "customRP": {
+      "name": "customDevOpsResource"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "[variables('apiVersions').MicrosoftCustomProviders_resourceProviders]",
+      "type": "Microsoft.CustomProviders/resourceProviders",
+      "name": "[variables('customRP').name]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "actions": [
+          {
+            "name": "ping",
+            "routingType": "Proxy",
+            "endpoint": "[concat(parameters('resourceProviderURL'), '/{requestPath}', concat('?code=', parameters('authzCode')))]"
+          }
+        ],
+        "resourceTypes": [
+          {
+            "name": "postgresqldb",
+            "routingType": "Proxy,Cache",
+            "endpoint": "[concat(parameters('resourceProviderURL'), '/{requestPath}', concat('?code=', parameters('authzCode')))]"
+          }
+        ]
+      },
+      "resources": [
+        {
+          "type": "postgresqldb",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "[variables('apiVersions').MicrosoftCustomProviders_resourceProviders]",
+          "dependsOn": [ "[concat('Microsoft.CustomProviders/resourceProviders/', variables('customRP').name)]" ],
+          "name": "[parameters('databaseName')]",
+          "properties": {
+            "database": "[parameters('databaseName')]"
+          }
+        }
+      ]
+    }
+  ]
+}
