@@ -2,12 +2,16 @@
 
 set sub=%AZURE_SUBSCRIPTION_ID%
 set rg=t1
+set prefix=chgp123
 set dbname=db3
 set cert=%~dp0..\debugCert\democert.p12:""
 set server_config=%~dp0..\appsettings.json
 set TEMPLATE_DIR=%~dp0..\templates
 set deployment_template=%TEMPLATE_DIR%\provider.json
 set API_VERSION=2018-09-01-preview
+set SP_APP_ID=69d6a1f2-0f24-4875-a182-55cf9cddc92f
+set POSTGRESQL_PASSWORD=SuperSecret123.-
+set POSTGRESQLHOST=%prefix%
 
 REM Get rid of Python's f*cking 
 REM      The command failed with an unexpected error.

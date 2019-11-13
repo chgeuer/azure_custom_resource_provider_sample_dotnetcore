@@ -1,0 +1,22 @@
+{
+	"azure": {
+		"subscription_id": null,
+		"tenant_id": null,
+		"prefix": null,
+		"service_principal": {
+			"app_id": null,
+			"secret": null
+		},
+		"resource_groups": {
+			"custom_resource": null,
+			"postgresql": null
+		}
+	},
+	"custom_rp": {
+		"domain": null,
+		"secret_code": null
+	},
+	"postgresql": {
+		"password": null
+	}
+}
