@@ -6,4 +6,6 @@ call %~dp0vars.cmd
    --verbose --include ^
    --cert-type P12 --cert %cert% ^
    --request DELETE --http1.1 ^
-   --url %customEndpoint%%P%?code=%code%
+   --url %CUSTOM_ENDPOINT%/%REQUEST_PATH%/%dbname%?code=%CUSTOM_RP_SECRET_CODE%
+
+

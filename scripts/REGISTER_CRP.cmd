@@ -11,4 +11,4 @@ call az group deployment create ^
     --parameters ^
         resourceProviderURL=%customEndpoint% ^
         databaseName=%dbname% ^
-        authzCode=%code%
+        authzCode=%CUSTOM_RP_SECRET_CODE%

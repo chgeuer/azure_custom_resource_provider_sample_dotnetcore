@@ -1,0 +1,131 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "2.0.0.0",
+    "parameters": {
+        "deploymentName": { "type": "string", "defaultValue": "chgp" },
+        "servicePrincipalAppID": { "type": "string" },
+        "postgresqlAdmin": { "type": "string" },
+        "postgresqlPassword": { "type": "securestring" }
+    },
+    "variables": {
+        "names": {
+            "keyvault": "[concat(parameters('deploymentName'), '-kv')]",
+            "postgresql": "[concat(parameters('deploymentName'), '-postgresql')]"
+        },
+        "postgresql": {
+            "administratorLogin": "[parameters('postgresqlAdmin')]",
+            "administratorLoginPassword": "[parameters('postgresqlPassword')]"
+        },
+        "apiVersion": {
+            "keyvault_vaults": "2018-02-14",
+            "keyvault_vaults_secrets": "2018-02-14",
+            "dbforpostgresql_servers": "2017-12-01-preview"
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.DBforPostgreSQL/servers",
+            "apiVersion": "[variables('apiVersion').dbforpostgresql_servers]",
+            "location": "[resourceGroup().location]",
+            "name": "[variables('names').postgresql]",
+            "tags": {
+                "displayName": "PostgreSQL Database"
+            },
+            "sku": {
+                "family": "Gen5",
+                "capacity": 1,
+                "name": "B_Gen5_1",
+                "tier": "Basic"
+            },
+            "properties": {
+                "version": "11",
+                "createMode": "Default",
+                "administratorLogin": "[variables('postgresql').administratorLogin]",
+                "administratorLoginPassword": "[variables('postgresql').administratorLoginPassword]",
+                "sslEnforcement": "Enabled",
+                "storageProfile": {
+                    "storageMB": 5120,
+                    "backupRetentionDays": 7,
+                    "geoRedundantBackup": "Disabled",
+                    "storageAutoGrow": "Enabled"
+                }
+            },
+            "resources": [
+                {
+                    "type": "firewallRules",
+                    "apiVersion": "[variables('apiVersion').dbforpostgresql_servers]",
+                    "location": "[resourceGroup().location]",
+                    "name": "free-lunch",
+                    "tags": { "displayName": "!!! Whole Internet can connect." },
+                    "dependsOn": [ "[concat('Microsoft.DBforPostgreSQL/servers/', variables('names').postgresql)]" ],
+                    "properties": { "startIpAddress": "0.0.0.0", "endIpAddress": "255.255.255.255" }
+                },
+                {
+                    "type": "firewallRules",
+                    "apiVersion": "[variables('apiVersion').dbforpostgresql_servers]",
+                    "location": "[resourceGroup().location]",
+                    "name": "AllowAllWindowsAzureIps",
+                    "tags": { "displayName": "Azure IPs can access" },
+                    "dependsOn": [ "[concat('Microsoft.DBforPostgreSQL/servers/', variables('names').postgresql)]" ],
+                    "properties": { "startIpAddress": "0.0.0.0", "endIpAddress": "0.0.0.0" }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "name": "[variables('names').keyvault]",
+            "apiVersion": "[variables('apiVersion').keyvault_vaults]",
+            "location": "[resourceGroup().location]",
+            "tags": { "displayName": "Key Vault" },
+            "dependsOn": [
+                "[concat('Microsoft.DBforPostgreSQL/servers/', variables('names').postgresql)]"
+            ],
+            "properties": {
+                "tenantId": "[subscription().tenantId]",
+                "enabledForDeployment": false,
+                "enabledForDiskEncryption": false,
+                "enabledForTemplateDeployment": true,
+                "sku": { "name": "Standard", "family": "A" },
+                "networkAcls": { "value": { "defaultAction": "Allow", "bypass": "AzureServices" } },
+                "accessPolicies": [
+                    {
+                        "tenantId": "[subscription().tenantId]",
+                        "objectId": "[parameters('servicePrincipalAppID')]",
+                        "permissions": { "secrets": [ "get", "list" ] }
+                    }
+                ]
+            },
+            "resources": [
+                {
+                    "type": "secrets",
+                    "apiVersion": "[variables('apiVersion').keyvault_vaults_secrets]",
+                    "dependsOn": [ "[concat('Microsoft.KeyVault/vaults/', variables('names').keyvault)]" ],
+                    "name": "postgresdatabaseconnectionstring",
+                    "tags": { "displayName": "ODBC Connection string for .NET (and PowerShell)." },
+                    "properties": {
+                        "contentType": "string",
+                        "value": "[postgresql.createNpgsqlConnectionString(variables('names').postgresql, variables('postgresql').administratorLogin, variables('postgresql').administratorLoginPassword)]"
+                    }
+                }
+            ]
+        }
+    ],
+    "functions": [
+        {
+            "namespace": "postgresql",
+            "members": {
+                "createNpgsqlConnectionString": {
+                    "parameters": [
+                        { "name": "server", "type": "string" },
+                        { "name": "username", "type": "string" },
+                        { "name": "password", "type": "string" }
+                    ],
+                    "output": {
+                        "value": "[concat('Server=', parameters('server'), '.postgres.database.azure.com;Port=5432;Username=', parameters('username'), '@', parameters('server'), ';Password=', parameters('password'), ';Options=''autocommit=off'';sslmode=require;')]",
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    ]
+}

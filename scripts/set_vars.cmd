@@ -1,47 +1,11 @@
 @echo off
+
 setlocal EnableDelayedExpansion
 set "USER_SETTINGS=%~dp0..\vars_user.json"
 
 IF EXIST %USER_SETTINGS% (
-    set "P=.azure.subscription_id"
-    set "V=AZURE_SUBSCRIPTION_ID"
-    For /f "tokens=*" %%G In ('type %USER_SETTINGS% ^| jq.exe -r !P!') Do (set "!V!=%%G")
-
-    set "P=.azure.tenant_id"
-    set "V=AZURE_TENANT_ID"
-    For /f "tokens=*" %%G In ('type %USER_SETTINGS% ^| jq.exe -r !P!') Do (set "!V!=%%G")
-
-    set "P=.azure.prefix"
-    set "V=AZURE_PREFIX"
-    For /f "tokens=*" %%G In ('type %USER_SETTINGS% ^| jq.exe -r !P!') Do (set "!V!=%%G")
-
-    set "P=.azure.service_principal.app_id"
-    set "V=AZURE_SP_APP_ID"
-    For /f "tokens=*" %%G In ('type %USER_SETTINGS% ^| jq.exe -r !P!') Do (set "!V!=%%G")
-
-    set "P=.azure.service_principal.secret"
-    set "V=AZURE_SP_SECRET"
-    For /f "tokens=*" %%G In ('type %USER_SETTINGS% ^| jq.exe -r !P!') Do (set "!V!=%%G")
-
-    set "P=.azure.resource_groups.custom_resource"
-    set "V=AZURE_RG_PROVIDER"
-    For /f "tokens=*" %%G In ('type %USER_SETTINGS% ^| jq.exe -r !P!') Do (set "!V!=%%G")
-
-    set "P=.azure.resource_groups.postgresql"
-    set "V=AZURE_RG_POSTGRESQL"
-    For /f "tokens=*" %%G In ('type %USER_SETTINGS% ^| jq.exe -r !P!') Do (set "!V!=%%G")
-
-    set "P=.custom_rp.domain"
-    set "V=CUSTOM_RP_DOMAIN"
-    For /f "tokens=*" %%G In ('type %USER_SETTINGS% ^| jq.exe -r !P!') Do (set "!V!=%%G")
-
-    set "P=.custom_rp.secret_code"
-    set "V=CUSTOM_RP_SECRET_CODE"
-    For /f "tokens=*" %%G In ('type %USER_SETTINGS% ^| jq.exe -r !P!') Do (set "!V!=%%G")
-
-    set "P=.postgresql.password"
-    set "V=POSTGRESQL_PASSWORD"
-    For /f "tokens=*" %%G In ('type %USER_SETTINGS% ^| jq.exe -r !P!') Do (set "!V!=%%G")
+    set JSON_SETTINGS_FILE=%USER_SETTINGS%
+    call %~dp0read_vars.cmd
 )
 
 echo ------ Azure Overview configuration --------
