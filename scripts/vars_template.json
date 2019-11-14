@@ -2,7 +2,6 @@
 	"azure": {
 		"subscription_id": null,
 		"tenant_id": null,
-		"prefix": null,
 		"service_principal": {
 			"app_id": null,
 			"secret": null
@@ -17,6 +16,11 @@
 		"secret_code": null
 	},
 	"postgresql": {
+		"name": null,
+		"admin": null,
 		"password": null
+	},
+	"keyvault": {
+		"name": null
 	}
 }

@@ -1,15 +1,16 @@
 @echo off
 
-call %~dp0vars.cmd
+call %~dp0vars_populate.cmd
 
-set deploymentName=deployKeyvaultAndDatabase
+set "DEPLOYMENT_NAME=deployKeyvaultAndDatabase"
 
 call az group deployment create ^
-    --name %deploymentName% ^
-    --resource-group %rg% ^
+    --name %DEPLOYMENT_NAME% ^
+    --resource-group %AZURE_RG_POSTGRESQL% ^
     --template-file %TEMPLATE_DIR%\postgresql_and_keyvault.json ^
     --parameters ^
-        deploymentName=%prefix% ^
-        servicePrincipalAppID=%SP_APP_ID% ^
-        postgresqlAdmin=%prefix% ^
+        servicePrincipalAppID=%AZURE_SP_APP_ID% ^
+        keyvaultName=%KEYVAULT_NAME% ^
+        postgresqlName=%POSTGRESQL_NAME% ^
+        postgresqlAdmin=%POSTGRESQL_ADMIN% ^
         postgresqlPassword=%POSTGRESQL_PASSWORD%

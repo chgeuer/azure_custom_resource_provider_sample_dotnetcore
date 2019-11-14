@@ -6,8 +6,6 @@
       "launchUrl": "customresource",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "AzureKeyVaultName": "chgp123-kv",
-        "AzureKeyVaultSecretName": "postgresdatabaseconnectionstring"
       },
       "applicationUrl": "https://localhost/"
     },
@@ -17,9 +15,7 @@
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/customresource",
       "environmentVariables": {
         "ASPNETCORE_URLS": "https://+:443;http://+:80",
-        "ASPNETCORE_HTTPS_PORT": "44365",
-        "AzureKeyVaultName": "chgp123-kv",
-        "AzureKeyVaultSecretName": "postgresdatabaseconnectionstring"
+        "ASPNETCORE_HTTPS_PORT": "44365"
       },
       "httpPort": 10000,
       "useSSL": true,

@@ -1,11 +1,13 @@
 @echo off
 
-call %~dp0vars.cmd
+call %~dp0vars_populate.cmd
+
+set /P DB_NAME=Enter database name: 
 
 set deploymentName=depl1
 
 call az group deployment create ^
     --name %deploymentName% ^
-    --resource-group %rg% ^
+    --resource-group %AZURE_RG_PROVIDER% ^
     --template-file %TEMPLATE_DIR%\customresource.json ^
-    --parameters databaseName=%dbname%
+    --parameters databaseName=%DB_NAME%

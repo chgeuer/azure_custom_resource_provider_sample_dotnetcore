@@ -1,14 +1,13 @@
 @echo off
 
-call %~dp0vars.cmd
+call %~dp0vars_populate.cmd
 
 set deploymentName=registerCRP
 
 call az group deployment create ^
     --name %deploymentName% ^
-    --resource-group %rg% ^
+    --resource-group %AZURE_RG_PROVIDER% ^
     --template-file %TEMPLATE_DIR%\provider.json ^
     --parameters ^
-        resourceProviderURL=%customEndpoint% ^
-        databaseName=%dbname% ^
+        resourceProviderURL=%CUSTOM_ENDPOINT% ^
         authzCode=%CUSTOM_RP_SECRET_CODE%

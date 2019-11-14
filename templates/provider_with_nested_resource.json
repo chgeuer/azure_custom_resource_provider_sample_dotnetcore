@@ -3,6 +3,7 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourceProviderURL": { "type": "string" },
+    "databaseName": { "type": "string" },
     "authzCode": { "type": "string" }
   },
   "variables": {
@@ -34,7 +35,19 @@
             "endpoint": "[concat(parameters('resourceProviderURL'), '/{requestPath}', concat('?code=', parameters('authzCode')))]"
           }
         ]
-      }
+      },
+      "resources": [
+        {
+          "type": "postgresqldb",
+          "location": "[resourceGroup().location]",
+          "apiVersion": "[variables('apiVersions').MicrosoftCustomProviders_resourceProviders]",
+          "dependsOn": [ "[concat('Microsoft.CustomProviders/resourceProviders/', variables('customRP').name)]" ],
+          "name": "[parameters('databaseName')]",
+          "properties": {
+            "database": "[parameters('databaseName')]"
+          }
+        }
+      ]
     }
   ]
 }

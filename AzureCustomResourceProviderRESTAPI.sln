@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29318.209
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NEW", "NEW.csproj", "{68AA0140-7064-4D4F-A808-F7E72679A0AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureCustomResourceProviderRESTAPI", "AzureCustomResourceProviderRESTAPI.csproj", "{68AA0140-7064-4D4F-A808-F7E72679A0AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

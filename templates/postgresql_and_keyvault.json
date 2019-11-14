@@ -2,15 +2,16 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "2.0.0.0",
     "parameters": {
-        "deploymentName": { "type": "string", "defaultValue": "chgp" },
         "servicePrincipalAppID": { "type": "string" },
+        "keyvaultName": { "type": "string" },
+        "postgresqlName": { "type": "string" },
         "postgresqlAdmin": { "type": "string" },
         "postgresqlPassword": { "type": "securestring" }
     },
     "variables": {
         "names": {
-            "keyvault": "[concat(parameters('deploymentName'), '-kv')]",
-            "postgresql": "[concat(parameters('deploymentName'), '-postgresql')]"
+            "keyvault": "[parameters('keyvaultName')]",
+            "postgresql": "[parameters('postgresqlName')]"
         },
         "postgresql": {
             "administratorLogin": "[parameters('postgresqlAdmin')]",
@@ -101,7 +102,7 @@
                     "apiVersion": "[variables('apiVersion').keyvault_vaults_secrets]",
                     "dependsOn": [ "[concat('Microsoft.KeyVault/vaults/', variables('names').keyvault)]" ],
                     "name": "postgresdatabaseconnectionstring",
-                    "tags": { "displayName": "ODBC Connection string for .NET (and PowerShell)." },
+                    "tags": { "displayName": "PostgreSQL Connection string for.NET Npgsql driver." },
                     "properties": {
                         "contentType": "string",
                         "value": "[postgresql.createNpgsqlConnectionString(variables('names').postgresql, variables('postgresql').administratorLogin, variables('postgresql').administratorLoginPassword)]"
