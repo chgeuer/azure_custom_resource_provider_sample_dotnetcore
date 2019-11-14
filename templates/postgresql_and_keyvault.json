@@ -2,7 +2,7 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "2.0.0.0",
     "parameters": {
-        "servicePrincipalAppID": { "type": "string" },
+        "servicePrincipalObjectId": { "type": "string" },
         "keyvaultName": { "type": "string" },
         "postgresqlName": { "type": "string" },
         "postgresqlAdmin": { "type": "string" },
@@ -91,7 +91,7 @@
                 "accessPolicies": [
                     {
                         "tenantId": "[subscription().tenantId]",
-                        "objectId": "[parameters('servicePrincipalAppID')]",
+                        "objectId": "[parameters('servicePrincipalObjectId')]",
                         "permissions": { "secrets": [ "get", "list" ] }
                     }
                 ]
@@ -122,7 +122,7 @@
                         { "name": "password", "type": "string" }
                     ],
                     "output": {
-                        "value": "[concat('Server=', parameters('server'), '.postgres.database.azure.com;Port=5432;Username=', parameters('username'), '@', parameters('server'), ';Password=', parameters('password'), ';Options=''autocommit=off'';sslmode=require;')]",
+                        "value": "[concat('Server=', parameters('server'), '.postgres.database.azure.com;Port=5432;Username=', parameters('username'), '@', parameters('server'), ';Password=', parameters('password'), ';SSLMode=Prefer;')]",
                         "type": "string"
                     }
                 }

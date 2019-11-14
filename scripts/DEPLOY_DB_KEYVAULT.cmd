@@ -9,7 +9,7 @@ call az group deployment create ^
     --resource-group %AZURE_RG_POSTGRESQL% ^
     --template-file %TEMPLATE_DIR%\postgresql_and_keyvault.json ^
     --parameters ^
-        servicePrincipalAppID=%AZURE_SP_APP_ID% ^
+        servicePrincipalObjectId=%AZURE_SP_OBJ_ID% ^
         keyvaultName=%KEYVAULT_NAME% ^
         postgresqlName=%POSTGRESQL_NAME% ^
         postgresqlAdmin=%POSTGRESQL_ADMIN% ^
