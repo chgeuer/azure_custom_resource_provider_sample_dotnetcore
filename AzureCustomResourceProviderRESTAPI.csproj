@@ -14,16 +14,4 @@
     <PackageReference Include="FluffySpoon.AspNet.LetsEncrypt" Version="1.122.0" />
     <PackageReference Include="Npgsql" Version="4.1.1" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Update="FluffySpoonAspNetLetsEncryptCertificate_Account">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="FluffySpoonAspNetLetsEncryptCertificate_Site">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="FluffySpoonAspNetLetsEncryptChallenge_Challenges">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>
