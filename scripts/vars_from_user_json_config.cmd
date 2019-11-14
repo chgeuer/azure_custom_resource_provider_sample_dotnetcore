@@ -14,6 +14,10 @@ set "P=.azure.service_principal.app_id"
 set "V=AZURE_SP_APP_ID"
 for /f "tokens=*" %%G in ('type %JSON_SETTINGS_FILE% ^| jq -r !P!') do (set "!V!=%%G")
 
+set "P=.azure.service_principal.obj_id"
+set "V=AZURE_SP_OBJ_ID"
+for /f "tokens=*" %%G in ('type %JSON_SETTINGS_FILE% ^| jq -r !P!') do (set "!V!=%%G")
+
 set "P=.azure.service_principal.secret"
 set "V=AZURE_SP_SECRET"
 for /f "tokens=*" %%G in ('type %JSON_SETTINGS_FILE% ^| jq -r !P!') do (set "!V!=%%G")
@@ -54,6 +58,7 @@ EndLocal ^
     && set "AZURE_SUBSCRIPTION_ID=%AZURE_SUBSCRIPTION_ID%" ^
     && set "AZURE_TENANT_ID=%AZURE_TENANT_ID%" ^
     && set "AZURE_SP_APP_ID=%AZURE_SP_APP_ID%" ^
+    && set "AZURE_SP_OBJ_ID=%AZURE_SP_OBJ_ID%" ^
     && set "AZURE_SP_SECRET=%AZURE_SP_SECRET%" ^
     && set "AZURE_RG_PROVIDER=%AZURE_RG_PROVIDER%" ^
     && set "AZURE_RG_POSTGRESQL=%AZURE_RG_POSTGRESQL%" ^

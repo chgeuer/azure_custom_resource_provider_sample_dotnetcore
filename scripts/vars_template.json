@@ -4,6 +4,7 @@
 		"tenant_id": null,
 		"service_principal": {
 			"app_id": null,
+			"obj_id": null,
 			"secret": null
 		},
 		"resource_groups": {
@@ -15,12 +16,12 @@
 		"domain": null,
 		"secret_code": null
 	},
+	"keyvault": {
+		"name": null
+	},
 	"postgresql": {
 		"name": null,
 		"admin": null,
 		"password": null
-	},
-	"keyvault": {
-		"name": null
 	}
 }

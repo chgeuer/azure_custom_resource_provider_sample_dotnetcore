@@ -12,6 +12,7 @@ echo ------ Azure Overview configuration --------
 set /P AZURE_SUBSCRIPTION_ID=Enter Azure Subscription ID (%AZURE_SUBSCRIPTION_ID%): 
 set /P AZURE_TENANT_ID=Enter Azure AD Tenant ID (%AZURE_TENANT_ID%): 
 set /P AZURE_SP_APP_ID=Enter Azure service principal application ID (%AZURE_SP_APP_ID%): 
+set /P AZURE_SP_OBJ_ID=Enter Azure service principal object ID (%AZURE_SP_OBJ_ID%): 
 set /P AZURE_SP_SECRET=Enter Azure service principal secret (press RETURN to leave unchanged): 
 echo ------ Azure Naming configuration --------
 set /P AZURE_RG_PROVIDER=Enter resource group name for custom RP (%AZURE_RG_PROVIDER%): 
@@ -28,6 +29,7 @@ type %~dp0vars_template.json ^
     | jq ".azure.subscription_id=\"%AZURE_SUBSCRIPTION_ID%\"" ^
     | jq ".azure.tenant_id=\"%AZURE_TENANT_ID%\"" ^
     | jq ".azure.service_principal.app_id=\"%AZURE_SP_APP_ID%\"" ^
+    | jq ".azure.service_principal.obj_id=\"%AZURE_SP_OBJ_ID%\"" ^
     | jq ".azure.service_principal.secret=\"%AZURE_SP_SECRET%\"" ^
     | jq ".azure.resource_groups.custom_resource=\"%AZURE_RG_PROVIDER%\"" ^
     | jq ".azure.resource_groups.postgresql=\"%AZURE_RG_POSTGRESQL%\"" ^

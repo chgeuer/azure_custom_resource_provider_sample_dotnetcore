@@ -32,6 +32,7 @@ using Certes;
 using FluffySpoon.AspNet.LetsEncrypt;
 using Newtonsoft.Json.Linq;
 using Npgsql;
+using Microsoft.Azure.KeyVault.Models;
 
 #endregion
 
@@ -93,14 +94,10 @@ namespace AzureCustomResourceProviderRESTAPI
         {
             // https://docs.microsoft.com/en-us/azure/key-vault/service-to-service-authentication#connection-string-support
 
-            // Environment.SetEnvironmentVariable("AzureServicesAuthConnectionString", $"RunAs=App;AppId={appId};TenantId={tenantID};AppKey={appSecret}");
             var kv = new KeyVaultClient(
                 new KeyVaultClient.AuthenticationCallback(
                     new AzureServiceTokenProvider().KeyVaultTokenCallback));
 
-            // Environment.SetEnvironmentVariable("AzureKeyVaultName", "chgp123-kv");
-            // Environment.SetEnvironmentVariable("AzureKeyVaultSecretName", "postgresdatabaseconnectionstring");
-            // var x = "Server=chgp123-postgresql.postgres.database.azure.com;Port=5432;Username=chgp123@chgp123-postgresql;Password=....;SSLMode=Prefer;"
             var secret = await kv.GetSecretAsync(
                 vaultBaseUrl: $"https://{this.AzureKeyVaultName}.vault.azure.net/",
                 secretName: this.AzureKeyVaultSecretName);
@@ -165,6 +162,7 @@ namespace AzureCustomResourceProviderRESTAPI
         private readonly MyKeyVaultSettings _keyVaultSettings;
         private readonly ILogger<CustomResourceController> _logger;
         private readonly string _requiredCodeParameter;
+        private readonly string _postgresConnectionStringBase;
 
         public CustomResourceController(
             IConfiguration configuration,
@@ -288,8 +286,14 @@ namespace AzureCustomResourceProviderRESTAPI
                 _logger.LogInformation($"Database {databaseName} existed already");
                 return Ok(); 
             }
+            catch (KeyVaultErrorException kve)
+            {
+                _logger.LogError($"KeyVault problem: {kve.Response.Content}");
+                return BadRequest();
+            }
             catch (Exception e)
             {
+                _logger.LogWarning($"{e.GetType().Name}: {e.Message}");
                 return BadRequest(e.Message);
             }
         }
@@ -329,7 +333,7 @@ public static class MyExtensions
         services.AddFluffySpoonLetsEncryptRenewalService(new LetsEncryptOptions
         {
             Email = "christian.geuer-pollmann@web.de",
-            UseStaging = true,
+            UseStaging = false,
             Domains = new[] { domainToUse },
             TimeUntilExpiryBeforeRenewal = TimeSpan.FromDays(30),
             TimeAfterIssueDateBeforeRenewal = TimeSpan.FromDays(7),
@@ -426,8 +430,8 @@ public static class MyExtensions
                     // OnAuthenticationFailed = async (certificateAuthenticationFailedContext) => { },
                     OnCertificateValidated = certificateValidatedContext =>
                     {
-                        var found = certificateThumbPrints.Any(thumb => thumb == certificateValidatedContext.ClientCertificate.Thumbprint);
-                        if (found)
+                        var requestorCertThumbPrint = certificateValidatedContext.ClientCertificate.Thumbprint;
+                        if (certificateThumbPrints.Contains(requestorCertThumbPrint))
                         {
                             certificateValidatedContext.Principal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
                                 new Claim(ClaimTypes.NameIdentifier, certificateValidatedContext.ClientCertificate.Subject, 
