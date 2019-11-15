@@ -178,7 +178,7 @@ namespace AzureCustomResourceProviderRESTAPI
         [HttpGet()]
         public ActionResult<string> Get()
         {
-            return new ActionResult<string>($"Hello {HttpContext.User.Identity.Name}");
+            return new ActionResult<string>($"Hello name=\"{HttpContext.User.Identity.Name}\" env=\"{(HttpContext.User.IsARMProductionCall() ? "production" : "development")}\"");
         }
 
         [HttpDelete("subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.CustomProviders/resourceProviders/{**path}")]
@@ -189,6 +189,8 @@ namespace AzureCustomResourceProviderRESTAPI
             {
                 return Unauthorized($"Supplied query parameter '?code={code}' not accepted."); // TODO currently leaking too much sensitive data
             }
+
+            _logger.LogInformation($"Environment {(HttpContext.User.IsARMProductionCall() ? "production" : "development")}");
 
             var databaseName = path.Split("/").Last();
             try
@@ -250,6 +252,8 @@ namespace AzureCustomResourceProviderRESTAPI
             {
                 return Unauthorized($"Supplied query parameter '?code={code}' not accepted."); // TODO currently leaking too much sensitive data
             }
+
+            _logger.LogInformation($"Environment {(HttpContext.User.IsARMProductionCall() ? "production" : "development")}");
 
             var databaseName = body.Properties.Database;
             try
@@ -385,17 +389,17 @@ public static class MyExtensions
         //    "thumbPrints": [ "2227B8175402AAF5BD4B5B80D51AB085EF61E7E8" ] 
         // },
 
-        public static Task<string[]> FetchThumbprints(IConfiguration configuration)
+        public static Task<(string[], string[])> FetchThumbprints(IConfiguration configuration)
         {
             var t = new AuthorizedCallers();
             configuration.GetSection("authorizedCallers").Bind(t);
             return t.GetCerts();
         }
 
-        private async Task<string[]> GetCerts()
+        private async Task<(string[], string[])> GetCerts()
         {
             var armThumbs = await GetARMCertThumbPrintsAsync(this.ArmURI);
-            return armThumbs.Union(this.ThumbPrints).ToArray();
+            return (armThumbs.ToArray(), this.ThumbPrints);
         }
 
         private static async Task<IEnumerable<string>> GetARMCertThumbPrintsAsync(string requestUri)
@@ -413,9 +417,14 @@ public static class MyExtensions
         }
     }
 
+    public static bool IsARMProductionCall(this ClaimsPrincipal claimsPrincipal)
+    {
+        return claimsPrincipal.FindFirstValue("caller_environment") == "production";
+    }
+
     public static void EnforceARMCaller(this IServiceCollection services, IConfiguration configuration)
     {
-        var certificateThumbPrints = AuthorizedCallers.FetchThumbprints(configuration).Result;
+        var (armThumbs, debugThumbs) = AuthorizedCallers.FetchThumbprints(configuration).Result;
 
         services
             .AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
@@ -431,12 +440,16 @@ public static class MyExtensions
                     OnCertificateValidated = certificateValidatedContext =>
                     {
                         var requestorCertThumbPrint = certificateValidatedContext.ClientCertificate.Thumbprint;
-                        if (certificateThumbPrints.Contains(requestorCertThumbPrint))
+                        var is_prod_cert = armThumbs.Contains(requestorCertThumbPrint);
+                        var is_dev_cert = debugThumbs.Contains(requestorCertThumbPrint);
+                        if (is_prod_cert || is_dev_cert)
                         {
                             certificateValidatedContext.Principal = new ClaimsPrincipal(new ClaimsIdentity(new[] {
                                 new Claim(ClaimTypes.NameIdentifier, certificateValidatedContext.ClientCertificate.Subject, 
                                     ClaimValueTypes.String, certificateValidatedContext.Options.ClaimsIssuer),
-                                new Claim(ClaimTypes.Name, certificateValidatedContext.ClientCertificate.Subject, 
+                                new Claim(ClaimTypes.Name, certificateValidatedContext.ClientCertificate.Subject,
+                                    ClaimValueTypes.String, certificateValidatedContext.Options.ClaimsIssuer),
+                                new Claim("caller_environment", is_prod_cert ? "production" : "development",
                                     ClaimValueTypes.String, certificateValidatedContext.Options.ClaimsIssuer)
                             }, certificateValidatedContext.Scheme.Name));
                             certificateValidatedContext.Success();
