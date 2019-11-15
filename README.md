@@ -9,6 +9,19 @@ By default, ARM templates allow you to create a database instance (a server), bu
 3. An ARM template for creating a custom resource (in our sample a PostgreSQL database and a demo table)
 4. A .NET Core application exposing the custom RP implementation via REST. During deployment/creation of the custom resource in the previous step, the ARM backend from Azure calls via `PUT` into our REST endpoint, and instructs it to create the actual custom resource.
 
+## Features
+
+- Uses the `letsEncryptDomain` config value to fetch a corresponding TLS server certificate from LetsEncrypt.
+- Uses the `authorizedCallers.armURI` config value to fetch the current production client certificates from Azure.
+- Uses the `authorizedCallers.thumbPrints` config value to identify (potentially self-signed) X.509 certificates for local REST calls.
+- Uses the `requiredCodeParameter` config value to configure a `?code=...` query parameter to determine valid calls.
+- Uses the `AzureServicesAuthConnectionString` environment variable to fetch a service principal credential to authN against Azure KeyVault.
+- Uses the `AzureKeyVaultName` and `AzureKeyVaultSecretName` to identity the KeyVault instance and secret name, to fetch the PostgreSQL connection string.
+- The REST endpoint requires `https://` (with client certificate) for provisioning requests.
+- The REST endpoint currently supports create (`PUT`) and delete (`DELETE`) operations.
+- When deleting a PostgreSQL database, the SQL code tries to terminate current connections to the database, before `DROP`ping the database. This is not necessarily production quality DBA behavior, so use with care.
+- All developer-provided config is stored in `vars_used.json`. This file MUST NOT be checked into version control!
+
 ## Setup
 
 ### Required information before you start
@@ -57,5 +70,25 @@ Each custom resource provider needs a name and a type. Currently, I'm pulling th
 ### TLS and peer entity authentication
 
 When you register your CRP with an `https://` URL, the ARM backend calls into your REST endpoint and authenticates itself using an X509 client certificate. ARM requires your TLS endpoint to serve out a proper (valid) certificate, so the application uses the fabulous LetsEncrypt CA to dynamically fetch a server cert. The ACME dance during certificate issuance is also the reason why we're exposing port TCP/80 for the initial phase. Actual CRP request require a TLS-connection.
+
+## Script helpers
+
+The [`scripts/`](scripts/) folder contains various Windows command (`.cmd`) files:
+
+- Configuration
+  - [`vars_set.cmd`](scripts/vars_set.cmd) to collect various deployment-time values, so that subsequent deployment scripts have all required data. When you re-run this script, it shows the current config values (if any), so pressing RETURN will keep the values as is.
+  - [`vars_show.cmd`](scripts/vars_show.cmd) prints the current configuration on screen.
+  - [`vars_populate.cmd`](scripts/vars_populate.cmd) and [`vars_from_user_json_config.cmd`](scripts/vars_from_user_json_config.cmd) are internal scripts, not to be used directly.
+  - [`set_AzureServicesAuthConnectionString.cmd`](scripts/set_AzureServicesAuthConnectionString.cmd) sets environment variables to you can locally run the server code.
+- Deployment
+  - [`DEPLOY_DB_KEYVAULT.cmd`](scripts/DEPLOY_DB_KEYVAULT.cmd) deploys a PostgreSQL and KeyVault instance to play with.
+  - [`DEPLOY_CRP.cmd`](scripts/DEPLOY_CRP.cmd) registers the custom resource provider.
+  - Creating a custom resource
+    - [`PUT_dev.cmd`](scripts/PUT_dev.cmd) uses cURL to locally simulate an inbound creation call.
+    - [`PUT_prod.cmd`](scripts/PUT_prod.cmd) uses `az` to really deploy a custom resource via Azure.
+  - Deleting a custom resource
+    - [`DELETE_dev.cmd`](scripts/DELETE_dev.cmd) uses cURL to locally simulate an inbound deletion call.
+    - [`DELETE_prod.cmd`](scripts/DELETE_prod.cmd) uses `az` to delete a custom resource via Azure.
+  - [`LIST.cmd`](scripts/LIST.cmd) uses `az` to list all custom resources.
 
 [crpOverview]: https://docs.microsoft.com/en-us/azure/managed-applications/custom-providers-overview
